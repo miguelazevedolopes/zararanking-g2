@@ -54,11 +54,11 @@ public class OrderServiceImpl implements OrderService {
          */
 
         // Invoke the repository to retrieve the details of an order.
-        OrderDetail orderDetail = new OrderDetail();
+        OrderDetail orderDetail = orderRepository.getOrderDetail(orderId);
 
         // Once you have retrieved the order details, you would need to retrieve the
         // products that are part of it...
-        List<ProductOrderItem> products = List.of();
+        List<ProductOrderItem> products = productRepository.getProductOrderItemsFromOrder(orderId);
 
         orderDetail.setProducts(products);
         return orderDetail;

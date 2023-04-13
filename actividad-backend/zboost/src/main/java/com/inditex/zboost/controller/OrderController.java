@@ -40,6 +40,14 @@ public class OrderController {
      * notify it.
      */
 
+    @GetMapping("/orders")
+    public List<Order> getOrders(@RequestParam int limit){
+        if(limit>100 || limit<1){
+            throw new InvalidParameterException("limit="+limit, "Limit out of bounds");
+        }
+        return orderService.findOrders(limit);
+    }
+
     @GetMapping("/orders/{orderId}")
     public OrderDetail getProductDetail(@PathVariable(name = "orderId", required = true) long orderId) {
         return orderService.findOrderDetail(orderId);

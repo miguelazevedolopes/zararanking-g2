@@ -22,11 +22,13 @@ public class OrderRepositoryImpl extends BaseRepository<Order> implements OrderR
     @Override
     public List<Order> getOrders(int limit) {
 
-        /*
-         * TODO: EXERCISE 2.a) Retrieve a list of the last N orders (remember to sort by
-         * date)
-         */
-        return List.of();
+        String sql = """
+            SELECT TOP :limit * FROM Orders ORDER BY date DESC;        
+        """;
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("limit", limit);
+        return this.query(sql, params, Order.class);
     }
 
     @Override
@@ -55,6 +57,34 @@ public class OrderRepositoryImpl extends BaseRepository<Order> implements OrderR
          * you can use the exception {@link
          * com.inditex.zboost.exception.NotFoundException}
          */
-        return new OrderDetail();
+
+         //SELECT SUM(total) FROM (SELECT i.quantity*p.price AS total FROM ORDER_ITEMS i JOIN PRODUCTS p ON i.product_id=p.id WHERE i.order_id=1)
+        
+
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("orderId", orderId);
+        String sql = """
+            SELECT * FROM Orders WHERE id=:orderId;
+                """;
+
+
+        List<OrderDetail> o= this.query(sql, params, OrderDetail.class); 
+        if(o.isEmpty()){
+            throw new NotFoundException("ID", "ID not found");
+        }
+        sql = """
+            SELECT 
+            o.id,o.date,o.status,SUM(i.quantity) AS itemsCount,
+            SUM(i.quantity*p.price) AS totalPrice
+            FROM ORDER_ITEMS i 
+            JOIN PRODUCTS p ON i.product_id=p.id 
+            JOIN ORDERS o ON o.id=i.order_id
+            WHERE i.order_id=:orderId;
+                """;
+
+        o= this.query(sql, params, OrderDetail.class); 
+        
+        return this.query(sql, params, OrderDetail.class).get(0); 
     }
 }
